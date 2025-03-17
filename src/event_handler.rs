@@ -40,7 +40,7 @@ pub(crate) async fn function_handler(
         payload.jump_distance,
         path::PathOptimize::Distance,
         false,
-        Some(300),
+        Some(25),
     );
     tracing::info!("Path: {:?}", path);
     Ok(path)
@@ -76,7 +76,7 @@ mod tests {
         );
         let response = function_handler(event, map_ref).await.unwrap();
         assert!(
-            matches!(response, data::PathResult::Found(_)),
+            matches!(response.status, data::PathResultStatus::Found),
             "Expected to find a path"
         );
     }

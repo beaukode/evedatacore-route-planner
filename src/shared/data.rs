@@ -95,6 +95,7 @@ pub fn get_star_map(path: &str) -> anyhow::Result<StarMap> {
 
 #[derive(serde::Serialize, Debug)]
 pub struct PathResultStats {
+    pub cost: i64,
     pub total_time: u128,
     pub heuristic_spend: u128,
     pub successors_spend: u128,
@@ -103,15 +104,23 @@ pub struct PathResultStats {
 }
 
 #[derive(serde::Serialize, Debug)]
-pub struct PathResultConnection {    
+pub struct PathResultConnection {
     pub conn_type: ConnType,
     pub distance: u16,
     pub target: u32,
 }
 
 #[derive(serde::Serialize, Debug)]
-pub enum PathResult {
-    Found((Vec<PathResultConnection>, i64, PathResultStats)),
-    NotFound(PathResultStats),
-    Timeout(PathResultStats),
+#[serde(rename_all = "lowercase")]
+pub enum PathResultStatus {
+    Found,
+    NotFound,
+    Timeout,
+}
+
+#[derive(serde::Serialize, Debug)]
+pub struct PathResult {
+    pub status: PathResultStatus,
+    pub path: Vec<PathResultConnection>,
+    pub stats: PathResultStats,
 }

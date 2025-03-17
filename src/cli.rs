@@ -207,37 +207,32 @@ fn main() -> anyhow::Result<()> {
                 *jump_distance,
                 path::PathOptimize::Distance,
                 false,
-                Some(300),
+                Some(10),
             );
-            info!("Found path in {:.3}", now.elapsed().as_secs_f64());
-            match path {
-                data::PathResult::Found((path, cost, stats)) => {
-                    println!("Path from {} to {}:", start_id, end_id);
-                    let mut last_id = tools::u16_to_system_id(start.id);
-                    for conn in path {
-                        println!(
-                            "{} -> {} ({:?}, {} ly)",
-                            last_id, conn.target, conn.conn_type, conn.distance
-                        );
-                        last_id = conn.target;
-                    }
-                    println!(
-                        "Visited: {} nodes, Cost: {}, Heuristic: {:?}, Successors: {:?}, Loop: {:?}, Time: {:?}",
-                        stats.visited,
-                        cost,
-                        stats.heuristic_spend,
-                        stats.successors_spend,
-                        stats.loop_spend,
-                        stats.total_time,
-                    );
-                }
-                data::PathResult::NotFound(_) => {
-                    warn!("No path found");
-                }
-                data::PathResult::Timeout(_) => {
-                    warn!("Path search timed out");
-                }
+            println!(
+                "Path from {} to {}: {:?} in {:.3}s",
+                start_id,
+                end_id,
+                path.status,
+                now.elapsed().as_secs_f64()
+            );
+            let mut last_id = tools::u16_to_system_id(start.id);
+            for conn in path.path {
+                println!(
+                    "{} -> {} ({:?}, {} ly)",
+                    last_id, conn.target, conn.conn_type, conn.distance
+                );
+                last_id = conn.target;
             }
+            println!(
+                "Visited: {} nodes, Cost: {}, Heuristic: {:?}, Successors: {:?}, Loop: {:?}, Time: {:?}",
+                path.stats.visited,
+                path.stats.cost,
+                path.stats.heuristic_spend,
+                path.stats.successors_spend,
+                path.stats.loop_spend,
+                path.stats.total_time,
+            );
         }
         None => {
             warn!("No command specified");

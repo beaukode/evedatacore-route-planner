@@ -105,35 +105,46 @@ pub fn calc_path(
                     target: tools::u16_to_system_id(c.target),
                 })
                 .collect();
-            return PathResult::Found((
+            return PathResult {
+                status: PathResultStatus::Found,
                 path,
-                cost,
-                PathResultStats {
+                stats: PathResultStats {
+                    cost,
                     total_time: stats.total_time.as_millis(),
                     heuristic_spend: stats.heuristic_spend.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
                     loop_spend: stats.loop_spend.as_millis(),
                     visited: stats.visited,
                 },
-            ));
+            };
         }
         astar::PathFindResult::NotFound(stats) => {
-            return PathResult::NotFound(PathResultStats {
-                total_time: stats.total_time.as_millis(),
-                heuristic_spend: stats.heuristic_spend.as_millis(),
-                successors_spend: stats.successors_spend.as_millis(),
-                loop_spend: stats.loop_spend.as_millis(),
-                visited: stats.visited,
-            })
+            return PathResult {
+                status: PathResultStatus::NotFound,
+                path: vec![],
+                stats: PathResultStats {
+                    cost: 0,
+                    total_time: stats.total_time.as_millis(),
+                    heuristic_spend: stats.heuristic_spend.as_millis(),
+                    successors_spend: stats.successors_spend.as_millis(),
+                    loop_spend: stats.loop_spend.as_millis(),
+                    visited: stats.visited,
+                },
+            };
         }
         astar::PathFindResult::Timeout(stats) => {
-            return PathResult::Timeout(PathResultStats {
-                total_time: stats.total_time.as_millis(),
-                heuristic_spend: stats.heuristic_spend.as_millis(),
-                successors_spend: stats.successors_spend.as_millis(),
-                loop_spend: stats.loop_spend.as_millis(),
-                visited: stats.visited,
-            })
+            return PathResult {
+                status: PathResultStatus::Timeout,
+                path: vec![],
+                stats: PathResultStats {
+                    cost: 0,
+                    total_time: stats.total_time.as_millis(),
+                    heuristic_spend: stats.heuristic_spend.as_millis(),
+                    successors_spend: stats.successors_spend.as_millis(),
+                    loop_spend: stats.loop_spend.as_millis(),
+                    visited: stats.visited,
+                },
+            };
         }
     }
 }
