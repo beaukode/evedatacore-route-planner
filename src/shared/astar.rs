@@ -1,8 +1,8 @@
 // https://docs.rs/crate/pathfinding/latest/source/src/directed/astar.rs
 // modified to return both nodes and edges
 use indexmap::map::Entry::{Occupied, Vacant};
-use lambda_http::tracing;
 use num_traits::Zero;
+use serde::Serialize;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::hash::Hash;
@@ -65,6 +65,7 @@ where
             stats.total_time = start_time.elapsed();
             return PathFindResult::Timeout(stats);
         }
+        stats.visited += 1;
         let successors = {
             let (node, &(_, c)) = parents.get_index(index).unwrap(); // Cannot fail
             if success(node) {
@@ -116,7 +117,7 @@ where
                 index: n,
             });
         }
-        stats.loop_spend += start_time.elapsed();        
+        stats.loop_spend += start_time.elapsed();
         to_see.extend(new_nodes);
     }
     stats.total_time = start_time.elapsed();

@@ -6,8 +6,9 @@ use uom::si::length::light_year;
 
 use log::info;
 
+use super::astar;
 use super::data::*;
-use super::astar::*;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PathOptimize {
     Fuel,
@@ -63,7 +64,7 @@ pub fn heuristic(star_map: &HashMap<SolarSystemId, Star>, conn: &Connection, end
         .get(&conn.target)
         .unwrap()
         .distance(end)
-        .get::<light_year>();    
+        .get::<light_year>();
     return d as i64;
 }
 
@@ -75,14 +76,14 @@ pub fn calc_path(
     optimize: PathOptimize,
     use_smart_gates: bool,
     timeout: Option<u64>,
-) -> PathFindResult<Connection, i64> {
+) -> PathResult {
     let init_conn = Connection {
         id: 0,
         conn_type: ConnType::Jump,
         distance: 0,
         target: start.id,
     };
-    let path = astar(
+    let path = astar::astar(
         &init_conn,
         |conn| successors(&star_map, conn, jump_distance, optimize, use_smart_gates),
         |conn| heuristic(&star_map, conn, end),
@@ -91,17 +92,38 @@ pub fn calc_path(
     );
 
     match path {
-        PathFindResult::Found((path, cost, stats)) => {
+        astar::PathFindResult::Found((path, cost, stats)) => {
             // The first connection is the one we invented
             // to start the search, so we can skip it
-            return PathFindResult::Found((path[1..].to_vec(), cost, stats));
+            return PathResult::Found((
+                path[1..].to_vec(),
+                cost,
+                Stats {
+                    total_time: stats.total_time.as_millis(),
+                    heuristic_spend: stats.heuristic_spend.as_millis(),
+                    successors_spend: stats.successors_spend.as_millis(),
+                    loop_spend: stats.loop_spend.as_millis(),
+                    visited: stats.visited,
+                },
+            ));
         }
-        PathFindResult::NotFound(stats) => {
-            return PathFindResult::NotFound(stats)
+        astar::PathFindResult::NotFound(stats) => {
+            return PathResult::NotFound(Stats {
+                total_time: stats.total_time.as_millis(),
+                heuristic_spend: stats.heuristic_spend.as_millis(),
+                successors_spend: stats.successors_spend.as_millis(),
+                loop_spend: stats.loop_spend.as_millis(),
+                visited: stats.visited,
+            })
         }
-        PathFindResult::Timeout(stats) => {
-            return PathFindResult::Timeout(stats)
+        astar::PathFindResult::Timeout(stats) => {
+            return PathResult::Timeout(Stats {
+                total_time: stats.total_time.as_millis(),
+                heuristic_spend: stats.heuristic_spend.as_millis(),
+                successors_spend: stats.successors_spend.as_millis(),
+                loop_spend: stats.loop_spend.as_millis(),
+                visited: stats.visited,
+            })
         }
     }
 }
-

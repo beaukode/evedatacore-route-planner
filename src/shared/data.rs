@@ -92,3 +92,19 @@ pub fn get_star_map(path: &str) -> anyhow::Result<StarMap> {
     let map: StarMap = bincode::deserialize(&std::fs::read(path)?)?;
     Ok(map)
 }
+
+#[derive(serde::Serialize, Debug)]
+pub struct Stats {
+    pub total_time: u128,
+    pub heuristic_spend: u128,
+    pub successors_spend: u128,
+    pub loop_spend: u128,
+    pub visited: u64,
+}
+
+#[derive(serde::Serialize, Debug)]
+pub enum PathResult {
+    Found((Vec<Connection>, i64, Stats)),
+    NotFound(Stats),
+    Timeout(Stats),
+}

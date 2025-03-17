@@ -210,7 +210,7 @@ fn main() -> anyhow::Result<()> {
             );
             info!("Found path in {:.3}", now.elapsed().as_secs_f64());
             match path {
-                astar::PathFindResult::Found((path, cost, stats)) => {
+                data::PathResult::Found((path, cost, stats)) => {
                     println!("Path from {} to {}:", start_id, end_id);
                     let mut last_id = start.id;
                     for conn in path {
@@ -233,10 +233,10 @@ fn main() -> anyhow::Result<()> {
                         stats.total_time,
                     );
                 }
-                astar::PathFindResult::NotFound(_) => {
+                data::PathResult::NotFound(_) => {
                     warn!("No path found");
                 }
-                astar::PathFindResult::Timeout(_) => {
+                data::PathResult::Timeout(_) => {
                     warn!("Path search timed out");
                 }
             }
