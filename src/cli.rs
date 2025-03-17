@@ -32,8 +32,10 @@ enum Commands {
         source: String,
         #[clap(short, long, default_value = "data/starmap.bin")]
         output: String,
-        #[clap(default_value = "200.0")]
+        #[clap(short = 'x', long, default_value = "200.0")]
         max_jump_distance: f64,
+        #[clap(short = 'i', long, default_value = "0.0")]
+        min_jump_distance: f64,
     },
     /// Find the shortest path between two stars
     Path {
@@ -61,6 +63,7 @@ fn main() -> anyhow::Result<()> {
             source,
             output,
             max_jump_distance,
+            min_jump_distance,
         }) => {
             info!("Ensuring output directory exists");
             if let Some(parent) = std::path::Path::new(output).parent() {
@@ -69,7 +72,7 @@ fn main() -> anyhow::Result<()> {
             info!("Loading raw data");
             let raw_star_data = raw::RawStarMap::from_file(source);
             let max_jump_dist: Length = Length::new::<light_year>(*max_jump_distance);
-
+            let min_jump_dist: Length = Length::new::<light_year>(*min_jump_distance);
             info!("Building star map");
             let mut star_map: HashMap<data::SolarSystemId, data::Star> = HashMap::new();
             for (id_str, raw_star) in raw_star_data.solar_systems.iter() {
@@ -150,7 +153,7 @@ fn main() -> anyhow::Result<()> {
                         continue;
                     }
                     let distance: Length = star.distance(&other_star);
-                    if distance < max_jump_dist {
+                    if distance < max_jump_dist && distance > min_jump_dist {
                         star.connections.push(data::Connection {
                             id: conn_count,
                             conn_type: data::ConnType::Jump,
