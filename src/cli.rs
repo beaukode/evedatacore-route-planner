@@ -146,7 +146,7 @@ fn main() -> anyhow::Result<()> {
             //     conn_count += 1;
             // }
 
-            info!("Building connections from jumps");            
+            info!("Building connections from jumps");
             let cloned_star_map = star_map.clone();
             for star in star_map.values_mut().progress() {
                 for other_star in cloned_star_map.values() {
@@ -213,14 +213,11 @@ fn main() -> anyhow::Result<()> {
             match path {
                 data::PathResult::Found((path, cost, stats)) => {
                     println!("Path from {} to {}:", start_id, end_id);
-                    let mut last_id = start.id;
+                    let mut last_id = tools::u16_to_system_id(start.id);
                     for conn in path {
                         println!(
                             "{} -> {} ({:?}, {} ly)",
-                            tools::u16_to_system_id(last_id),
-                            tools::u16_to_system_id(conn.target),
-                            conn.conn_type,
-                            conn.distance
+                            last_id, conn.target, conn.conn_type, conn.distance
                         );
                         last_id = conn.target;
                     }

@@ -8,6 +8,7 @@ use log::info;
 
 use super::astar;
 use super::data::*;
+use super::tools;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PathOptimize {
@@ -95,10 +96,19 @@ pub fn calc_path(
         astar::PathFindResult::Found((path, cost, stats)) => {
             // The first connection is the one we invented
             // to start the search, so we can skip it
+            let path = path[1..]
+                .to_vec()
+                .iter()
+                .map(|c| PathResultConnection {
+                    conn_type: c.conn_type.clone(),
+                    distance: c.distance,
+                    target: tools::u16_to_system_id(c.target),
+                })
+                .collect();
             return PathResult::Found((
-                path[1..].to_vec(),
+                path,
                 cost,
-                Stats {
+                PathResultStats {
                     total_time: stats.total_time.as_millis(),
                     heuristic_spend: stats.heuristic_spend.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
@@ -108,7 +118,7 @@ pub fn calc_path(
             ));
         }
         astar::PathFindResult::NotFound(stats) => {
-            return PathResult::NotFound(Stats {
+            return PathResult::NotFound(PathResultStats {
                 total_time: stats.total_time.as_millis(),
                 heuristic_spend: stats.heuristic_spend.as_millis(),
                 successors_spend: stats.successors_spend.as_millis(),
@@ -117,7 +127,7 @@ pub fn calc_path(
             })
         }
         astar::PathFindResult::Timeout(stats) => {
-            return PathResult::Timeout(Stats {
+            return PathResult::Timeout(PathResultStats {
                 total_time: stats.total_time.as_millis(),
                 heuristic_spend: stats.heuristic_spend.as_millis(),
                 successors_spend: stats.successors_spend.as_millis(),
