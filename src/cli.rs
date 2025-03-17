@@ -213,7 +213,10 @@ fn main() -> anyhow::Result<()> {
                     for conn in path {
                         println!(
                             "{} -> {} ({:?}, {} ly)",
-                            &last_id, &conn.target, conn.conn_type, conn.distance
+                            tools::u16_to_system_id(last_id),
+                            tools::u16_to_system_id(conn.target),
+                            conn.conn_type,
+                            conn.distance
                         );
                         last_id = conn.target;
                     }
