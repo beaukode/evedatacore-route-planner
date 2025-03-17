@@ -87,38 +87,40 @@ fn main() -> anyhow::Result<()> {
                 star_map.insert(id, star);
             }
 
-            // info!("Building connections from npc gates");
-            // let mut conn_count = 0;
-            // for raw_jump in raw_star_data.jumps.iter() {
-            //     // rust only lets us borrow one mutable star at a time, so we can't add
-            //     // from->to and to->from gates in the same block
-            //     for (fid, tid) in [
-            //         (raw_jump.from_system_id, raw_jump.to_system_id),
-            //         (raw_jump.to_system_id, raw_jump.from_system_id),
-            //     ] {
-            //         let to_star = star_map.get(&tid).unwrap().clone();
-            //         let from_star = star_map.get_mut(&fid).unwrap();
-            //         let distance: Length = from_star.distance(&to_star);
-            //         let conn_type = match raw_jump.jump_type {
-            //             0 => data::ConnType::NpcGate,
-            //             1 => data::ConnType::NpcGate, // What are these ???
-            //             _ => {
-            //                 info!(
-            //                     "{} -> {} is an unknown jump type ({})",
-            //                     fid, tid, raw_jump.jump_type
-            //                 );
-            //                 continue;
-            //             }
-            //         };
-            //         from_star.connections.push(data::Connection {
-            //             id: conn_count,
-            //             conn_type,
-            //             distance,
-            //             target: tid,
-            //         });
-            //         conn_count += 1;
-            //     }
-            // }
+            info!("Building connections from npc gates");
+            let mut conn_count = 0;
+            for raw_jump in raw_star_data.jumps.iter() {
+                // rust only lets us borrow one mutable star at a time, so we can't add
+                // from->to and to->from gates in the same block
+                for (fid, tid) in [
+                    (raw_jump.from_system_id, raw_jump.to_system_id),
+                    (raw_jump.to_system_id, raw_jump.from_system_id),
+                ] {
+                    let fid = tools::system_id_to_u16(fid)?;
+                    let tid = tools::system_id_to_u16(tid)?;
+                    let to_star = star_map.get(&tid).unwrap().clone();
+                    let from_star = star_map.get_mut(&fid).unwrap();
+                    let distance: Length = from_star.distance(&to_star);
+                    let conn_type = match raw_jump.jump_type {
+                        0 => data::ConnType::NpcGate,
+                        1 => data::ConnType::NpcGate, // What are these ???
+                        _ => {
+                            info!(
+                                "{} -> {} is an unknown jump type ({})",
+                                fid, tid, raw_jump.jump_type
+                            );
+                            continue;
+                        }
+                    };
+                    from_star.connections.push(data::Connection {
+                        id: conn_count,
+                        conn_type,
+                        distance: distance.get::<light_year>() as u16,
+                        target: tid,
+                    });
+                    conn_count += 1;
+                }
+            }
 
             // info!("Building connections from smart gates");
             // let smart_gates: Vec<raw::RawSmartGate> =
@@ -144,8 +146,7 @@ fn main() -> anyhow::Result<()> {
             //     conn_count += 1;
             // }
 
-            info!("Building connections from jumps");
-            let mut conn_count = 0;
+            info!("Building connections from jumps");            
             let cloned_star_map = star_map.clone();
             for star in star_map.values_mut().progress() {
                 for other_star in cloned_star_map.values() {

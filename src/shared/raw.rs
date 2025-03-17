@@ -24,11 +24,11 @@ impl RawStarMap {
 #[derive(Debug, Deserialize)]
 pub struct RawJump {
     #[serde(rename(deserialize = "fromSystemID"))]
-    pub from_system_id: u64,
+    pub from_system_id: u32,
     #[serde(rename(deserialize = "jumpType"))]
     pub jump_type: u8,
     #[serde(rename(deserialize = "toSystemID"))]
-    pub to_system_id: u64,
+    pub to_system_id: u32,
 }
 
 
