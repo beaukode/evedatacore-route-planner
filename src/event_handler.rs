@@ -11,6 +11,8 @@ pub struct EventPayload {
     pub from: u32,
     pub to: u32,
     pub jump_distance: u16,
+    pub optimize: Option<path::PathOptimize>,
+    pub use_smart_gates: bool,
 }
 
 /// This is the main body for the function.
@@ -38,8 +40,8 @@ pub(crate) async fn function_handler(
         start,
         end,
         payload.jump_distance,
-        path::PathOptimize::Distance,
-        false,
+        payload.optimize.unwrap(),
+        payload.use_smart_gates,
         Some(25),
     );
     tracing::info!("Path: {:?}", path);
@@ -71,6 +73,8 @@ mod tests {
                 from: 30001573,
                 to: 30013956,
                 jump_distance: 150,
+                optimize: Some(path::PathOptimize::Fuel),
+                use_smart_gates: false,
             },
             Context::default(),
         );

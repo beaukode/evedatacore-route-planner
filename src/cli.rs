@@ -102,8 +102,8 @@ fn main() -> anyhow::Result<()> {
                     let from_star = star_map.get_mut(&fid).unwrap();
                     let distance: Length = from_star.distance(&to_star);
                     let conn_type = match raw_jump.jump_type {
-                        0 => data::ConnType::NpcGate,
-                        1 => data::ConnType::NpcGate, // What are these ???
+                        0 => data::ConnType::Gate,
+                        1 => data::ConnType::Gate,
                         _ => {
                             info!(
                                 "{} -> {} is an unknown jump type ({})",
@@ -205,7 +205,7 @@ fn main() -> anyhow::Result<()> {
                 start,
                 end,
                 *jump_distance,
-                path::PathOptimize::Distance,
+                path::PathOptimize::Fuel,
                 false,
                 Some(10),
             );

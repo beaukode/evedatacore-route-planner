@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
+use serde::{Deserialize, Serialize};
 use uom::si::f64::*;
 use uom::si::length::light_year;
 
@@ -10,7 +11,8 @@ use super::astar;
 use super::data::*;
 use super::tools;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum PathOptimize {
     Fuel,
     Distance,
@@ -46,7 +48,7 @@ fn successors(
                 (PathOptimize::Fuel, ConnType::Jump) => (c.clone(), c.distance as i64),
                 // Gate connections are free (-ish. It still takes a tiny
                 // amount of fuel to warp to a gate)
-                (PathOptimize::Fuel, ConnType::NpcGate) => (c.clone(), 1),
+                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), 1),
                 // Smart gates are slightly more expensive than NPC gates
                 (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), 2),
                 // Treat all hops the same, we want to minimise the total

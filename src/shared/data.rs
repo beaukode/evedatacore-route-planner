@@ -10,8 +10,9 @@ pub type ConnectionId = u32;
 pub type SolarSystemId = u16;
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[serde(rename_all = "lowercase")]
 pub enum ConnType {
-    NpcGate,
+    Gate,
     SmartGate,
     Jump,
 }
