@@ -33,8 +33,6 @@ fn successors(
         // take gates and short jumps - stop searching after we
         // find a long jump
         .take_while(|c| c.conn_type != ConnType::Jump || c.distance <= jump_distance)
-        // If we're not using smart gates, skip them
-        .filter(|c| use_smart_gates || c.conn_type != ConnType::SmartGate)
         // Turn the connection into a (connection, cost) tuple
         .map(|c| {
             // info!("Successor: {} -> {} {} LY", star.id, c.target, c.distance);
