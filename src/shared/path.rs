@@ -35,21 +35,17 @@ fn successors(
         .take_while(|c| c.conn_type != ConnType::Jump || c.distance <= jump_distance)
         // Turn the connection into a (connection, cost) tuple
         .map(|c| {
-            // info!("Successor: {} -> {} {} LY", star.id, c.target, c.distance);
             match (optimize, &c.conn_type) {
                 // For shortest path, we only care about the distance
                 // and don't care about the type of connection
                 (PathOptimize::Distance, _) => (c.clone(), c.distance as i64),
-                // For fuel efficient, we only care about the distance
-                // if it's a jump
+                // For fuel efficient, we penalise jumps
                 (PathOptimize::Fuel, ConnType::Jump) => (c.clone(), c.distance as i64),
-                // Gate connections are free (-ish. It still takes a tiny
-                // amount of fuel to warp to a gate)
-                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), 1),
-                // Smart gates are slightly more expensive than NPC gates
-                (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), 2),
+                // Over gates, we only count half the distance
+                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), (c.distance / 2) as i64),
+                (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), (c.distance / 2) as i64),
                 // Treat all hops the same, we want to minimise the total
-                (PathOptimize::Hops, _) => (c.clone(), 1),
+                (PathOptimize::Hops, _) => (c.clone(), 100),
             }
         })
         .collect()
