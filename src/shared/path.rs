@@ -42,8 +42,8 @@ fn successors(
                 // For fuel efficient, we penalise jumps
                 (PathOptimize::Fuel, ConnType::Jump) => (c.clone(), c.distance as i64),
                 // Over gates, we only count half the distance
-                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), (c.distance / 2) as i64),
-                (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), (c.distance / 2) as i64),
+                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), 1),
+                (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), 1),
                 // Treat all hops the same, we want to minimise the total
                 (PathOptimize::Hops, _) => (c.clone(), 100),
             }
