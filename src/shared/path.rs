@@ -11,7 +11,7 @@ use super::astar;
 use super::data::*;
 use super::tools;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PathOptimize {
     Fuel,

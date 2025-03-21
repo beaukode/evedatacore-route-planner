@@ -43,8 +43,8 @@ enum Commands {
         end_id: u32,
         #[clap(short, long, default_value = "150")]
         jump_distance: u16,
-        // #[clap(short, long, default_value = "fuel")]
-        // optimize: eftb::calc::path::PathOptimize,
+        #[clap(short, long, default_value = "fuel")]
+        optimize: path::PathOptimize,
         // #[clap(short, long)]
         // use_smart_gates: bool,
         #[clap(short, long, default_value = "data/starmap.bin")]
@@ -182,7 +182,7 @@ fn main() -> anyhow::Result<()> {
             start_id,
             end_id,
             jump_distance,
-            // optimize,
+            optimize,
             // use_smart_gates,
             source,
         }) => {
@@ -205,7 +205,7 @@ fn main() -> anyhow::Result<()> {
                 start,
                 end,
                 *jump_distance,
-                path::PathOptimize::Fuel,
+                *optimize,
                 false,
                 Some(10),
             );
