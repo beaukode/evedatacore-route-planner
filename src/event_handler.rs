@@ -7,12 +7,19 @@ use crate::shared::path;
 use crate::shared::tools;
 
 #[derive(Debug, Deserialize)]
+pub struct SmartGateLink {
+    pub from: u32,
+    pub to: u32,
+    pub distance: u16,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct EventPayload {
     pub from: u32,
     pub to: u32,
     pub jump_distance: u16,
     pub optimize: Option<path::PathOptimize>,
-    pub use_smart_gates: bool,
+    pub smart_gates: Vec<SmartGateLink>,
 }
 
 /// This is the main body for the function.
@@ -28,20 +35,61 @@ pub(crate) async fn function_handler(
     let payload = event.payload;
     tracing::info!("Payload: {:?}", payload);
 
-    let start = star_map
+    let start_time = std::time::Instant::now();
+
+    let mut star_map_copy = star_map.clone();
+    let mut id_counter = u32::MAX; // Start from the highest possible ID to avoid collisions with existing connections
+    for smart_gate in &payload.smart_gates {
+        let from_id = tools::system_id_to_u16(smart_gate.from).unwrap();
+        let to_id = tools::system_id_to_u16(smart_gate.to).unwrap();
+        if let Some(from_system) = star_map_copy.get_mut(&from_id) {
+            tracing::info!(
+                "Registering smart gate: {} -> {} (distance: {}) [len:{}]",
+                smart_gate.from,
+                smart_gate.to,
+                smart_gate.distance,
+                from_system.connections.len()
+            );
+            from_system.connections.insert(
+                0,
+                data::Connection {
+                    conn_type: data::ConnType::SmartGate,
+                    distance: smart_gate.distance,
+                    target: to_id,
+                    id: id_counter,
+                },
+            );
+            id_counter -= 1;
+            tracing::info!(
+                "Registered smart gate: {} -> {} (distance: {}) [len:{}]",
+                smart_gate.from,
+                smart_gate.to,
+                smart_gate.distance,
+                from_system.connections.len()
+            );
+        }
+    }
+
+    let elapsed = start_time.elapsed().as_millis();
+    tracing::info!(
+        "Time to inject {} smart gates: {}ms",
+        payload.smart_gates.len(),
+        elapsed
+    );
+
+    let start = star_map_copy
         .get(&tools::system_id_to_u16(payload.from).unwrap())
         .unwrap();
-    let end = star_map
+    let end = star_map_copy
         .get(&tools::system_id_to_u16(payload.to).unwrap())
         .unwrap();
 
     let path = path::calc_path(
-        &star_map,
+        &star_map_copy,
         start,
         end,
         payload.jump_distance,
         payload.optimize.unwrap(),
-        payload.use_smart_gates,
         Some(25),
     );
     tracing::info!("Path: {:?}", path);
@@ -74,7 +122,7 @@ mod tests {
                 to: 30013956,
                 jump_distance: 150,
                 optimize: Some(path::PathOptimize::Fuel),
-                use_smart_gates: false,
+                smart_gates: vec![],
             },
             Context::default(),
         );

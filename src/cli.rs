@@ -45,8 +45,6 @@ enum Commands {
         jump_distance: u16,
         #[clap(short, long, default_value = "fuel")]
         optimize: path::PathOptimize,
-        // #[clap(short, long)]
-        // use_smart_gates: bool,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
     },
@@ -183,13 +181,27 @@ fn main() -> anyhow::Result<()> {
             end_id,
             jump_distance,
             optimize,
-            // use_smart_gates,
             source,
         }) => {
             info!("Loading star map");
             let now = Instant::now();
-            let star_map = data::get_star_map(source)?;
+            let mut star_map = data::get_star_map(source)?;
             info!("Loaded star map in {:.3}", now.elapsed().as_secs_f64());
+
+            // Inject a smart gate between
+            let from_id = tools::system_id_to_u16(30014020).unwrap();
+            let to_id = tools::system_id_to_u16(30013974).unwrap();
+            if let Some(from_system) = star_map.get_mut(&from_id) {
+                from_system.connections.insert(
+                    0,
+                    data::Connection {
+                        conn_type: data::ConnType::SmartGate,
+                        distance: 311,
+                        target: to_id,
+                        id: u32::MAX,
+                    },
+                );
+            }
 
             let start = star_map
                 .get(&tools::system_id_to_u16(*start_id).unwrap())
@@ -200,23 +212,9 @@ fn main() -> anyhow::Result<()> {
 
             info!("Finding path");
             let now = Instant::now();
-            let path = path::calc_path(
-                &star_map,
-                start,
-                end,
-                *jump_distance,
-                *optimize,
-                false,
-                Some(10),
-            );
-            println!(
-                "Path from {} to {}: {:?} in {:.3}s",
-                start_id,
-                end_id,
-                path.status,
-                now.elapsed().as_secs_f64()
-            );
+            let path = path::calc_path(&star_map, start, end, *jump_distance, *optimize, Some(60));
             let mut last_id = tools::u16_to_system_id(start.id);
+            let path_len = path.path.len();
             for conn in path.path {
                 println!(
                     "{} -> {} ({:?}, {} ly)",
@@ -224,6 +222,14 @@ fn main() -> anyhow::Result<()> {
                 );
                 last_id = conn.target;
             }
+            println!(
+                "Path from {} to {}: {:?} {} nodes in {:.3}s",
+                start_id,
+                end_id,
+                path.status,
+                path_len,
+                now.elapsed().as_secs_f64()
+            );
             println!(
                 "Visited: {} nodes, Cost: {}, Heuristic: {:?}, Successors: {:?}, Loop: {:?}, Time: {:?}",
                 path.stats.visited,

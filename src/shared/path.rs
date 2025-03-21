@@ -26,7 +26,6 @@ fn successors(
     conn: &Connection,
     jump_distance: u16,
     optimize: PathOptimize,
-    use_smart_gates: bool,
 ) -> Vec<(Connection, i64)> {
     let star = star_map.get(&conn.target).unwrap();
     star.connections
@@ -77,7 +76,6 @@ pub fn calc_path(
     end: &Star,
     jump_distance: u16,
     optimize: PathOptimize,
-    use_smart_gates: bool,
     timeout: Option<u64>,
 ) -> PathResult {
     let init_conn = Connection {
@@ -88,7 +86,7 @@ pub fn calc_path(
     };
     let path = astar::astar(
         &init_conn,
-        |conn| successors(&star_map, conn, jump_distance, optimize, use_smart_gates),
+        |conn| successors(&star_map, conn, jump_distance, optimize),
         |conn| heuristic(&star_map, conn, end),
         |conn| conn.target == end.id,
         timeout,
