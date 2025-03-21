@@ -43,13 +43,6 @@ pub(crate) async fn function_handler(
         let from_id = tools::system_id_to_u16(smart_gate.from).unwrap();
         let to_id = tools::system_id_to_u16(smart_gate.to).unwrap();
         if let Some(from_system) = star_map_copy.get_mut(&from_id) {
-            tracing::info!(
-                "Registering smart gate: {} -> {} (distance: {}) [len:{}]",
-                smart_gate.from,
-                smart_gate.to,
-                smart_gate.distance,
-                from_system.connections.len()
-            );
             from_system.connections.insert(
                 0,
                 data::Connection {
@@ -60,13 +53,6 @@ pub(crate) async fn function_handler(
                 },
             );
             id_counter -= 1;
-            tracing::info!(
-                "Registered smart gate: {} -> {} (distance: {}) [len:{}]",
-                smart_gate.from,
-                smart_gate.to,
-                smart_gate.distance,
-                from_system.connections.len()
-            );
         }
     }
 
