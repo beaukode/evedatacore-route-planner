@@ -17,7 +17,6 @@ type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<FxHasher>>;
 
 pub struct Stats {
     pub total_time: Duration,
-    pub heuristic_spend: Duration,
     pub successors_spend: Duration,
     pub loop_spend: Duration,
     pub visited: u64,
@@ -46,7 +45,6 @@ where
 {
     let mut stats = Stats {
         total_time: Duration::from_secs(0),
-        heuristic_spend: Duration::from_secs(0),
         successors_spend: Duration::from_secs(0),
         loop_spend: Duration::from_secs(0),
         visited: 0,
@@ -93,17 +91,13 @@ where
             let n; // index for successor
             match parents.entry(successor) {
                 Vacant(e) => {
-                    let start_time = Instant::now();
                     h = heuristic(e.key());
-                    stats.heuristic_spend += start_time.elapsed();
                     n = e.index();
                     e.insert((index, new_cost));
                 }
                 Occupied(mut e) => {
                     if e.get().1 > new_cost {
-                        let start_time = Instant::now();
                         h = heuristic(e.key());
-                        stats.heuristic_spend += start_time.elapsed();
                         n = e.index();
                         e.insert((index, new_cost));
                     } else {

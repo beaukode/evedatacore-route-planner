@@ -111,7 +111,6 @@ pub fn calc_path(
                 stats: PathResultStats {
                     cost,
                     total_time: stats.total_time.as_millis(),
-                    heuristic_spend: stats.heuristic_spend.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
                     loop_spend: stats.loop_spend.as_millis(),
                     visited: stats.visited,
@@ -125,7 +124,6 @@ pub fn calc_path(
                 stats: PathResultStats {
                     cost: 0,
                     total_time: stats.total_time.as_millis(),
-                    heuristic_spend: stats.heuristic_spend.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
                     loop_spend: stats.loop_spend.as_millis(),
                     visited: stats.visited,
@@ -139,7 +137,6 @@ pub fn calc_path(
                 stats: PathResultStats {
                     cost: 0,
                     total_time: stats.total_time.as_millis(),
-                    heuristic_spend: stats.heuristic_spend.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
                     loop_spend: stats.loop_spend.as_millis(),
                     visited: stats.visited,

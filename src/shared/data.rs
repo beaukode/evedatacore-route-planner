@@ -98,7 +98,6 @@ pub fn get_star_map(path: &str) -> anyhow::Result<StarMap> {
 pub struct PathResultStats {
     pub cost: i64,
     pub total_time: u128,
-    pub heuristic_spend: u128,
     pub successors_spend: u128,
     pub loop_spend: u128,
     pub visited: u64,

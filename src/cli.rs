@@ -231,10 +231,9 @@ fn main() -> anyhow::Result<()> {
                 now.elapsed().as_secs_f64()
             );
             println!(
-                "Visited: {} nodes, Cost: {}, Heuristic: {:?}, Successors: {:?}, Loop: {:?}, Time: {:?}",
+                "Visited: {} nodes, Cost: {}, Successors: {:?}, Loop: {:?}, Time: {:?}",
                 path.stats.visited,
                 path.stats.cost,
-                path.stats.heuristic_spend,
                 path.stats.successors_spend,
                 path.stats.loop_spend,
                 path.stats.total_time,
