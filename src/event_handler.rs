@@ -11,6 +11,7 @@ pub struct SmartGateLink {
     pub from: u32,
     pub to: u32,
     pub distance: u16,
+    pub id: u32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -37,8 +38,7 @@ pub(crate) async fn function_handler(
 
     let start_time = std::time::Instant::now();
 
-    let mut star_map_copy = star_map.clone();
-    let mut id_counter = u32::MAX; // Start from the highest possible ID to avoid collisions with existing connections
+    let mut star_map_copy = star_map.clone();    
     for smart_gate in &payload.smart_gates {
         let from_id = tools::system_id_to_u16(smart_gate.from).unwrap();
         let to_id = tools::system_id_to_u16(smart_gate.to).unwrap();
@@ -49,10 +49,9 @@ pub(crate) async fn function_handler(
                     conn_type: data::ConnType::SmartGate,
                     distance: smart_gate.distance,
                     target: to_id,
-                    id: id_counter,
+                    id: smart_gate.id,
                 },
             );
-            id_counter -= 1;
         }
     }
 

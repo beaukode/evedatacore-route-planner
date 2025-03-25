@@ -97,6 +97,7 @@ pub fn calc_path(
                     conn_type: c.conn_type.clone(),
                     distance: c.distance,
                     target: tools::u16_to_system_id(c.target),
+                    id: c.id,
                 })
                 .collect();
             return PathResult {

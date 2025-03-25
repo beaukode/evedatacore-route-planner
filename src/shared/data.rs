@@ -108,6 +108,7 @@ pub struct PathResultConnection {
     pub conn_type: ConnType,
     pub distance: u16,
     pub target: u32,
+    pub id: u32,
 }
 
 #[derive(serde::Serialize, Debug)]
