@@ -27,6 +27,12 @@ jobs:
         run: "cargo test --bin cli"
       - name: "Build"
         run: "cargo lambda build --release --output-format zip"
+      - name: Configure AWS credentials
+        if: vars.AWS_ACCOUNT_ID && vars.AWS_ROLE_NAME
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{vars.AWS_ACCOUNT_ID}}:role/${{vars.AWS_ROLE_NAME}}
+          aws-region: "us-east-1"
       - name: "Deploy to lambda #1"
         if: vars.LAMBDA_FUNCTION_1_ARN
         run: |
