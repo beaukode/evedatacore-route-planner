@@ -1,0 +1,35 @@
+name: Build and deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - production
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    concurrency:
+      group: "build-${{github.ref}}"
+      cancel-in-progress: false
+    runs-on: "ubuntu-latest"
+    environment: ${{github.ref_name}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: "Test"
+        run: "cargo test"
+      - name: "Build"
+        run: "cargo lambda build --release --output-format zip"
+      - name: "Deploy to lambda #1"
+        if: vars.LAMBDA_FUNCTION_1_ARN
+        run: |
+          aws lambda update-function-code --region eu-west-1 --publish --zip-file fileb://target/lambda/main/bootstrap.zip --function-name ${{vars.LAMBDA_FUNCTION_1_ARN}}
+      - name: "Deploy to lambda #2"
+        if: vars.LAMBDA_FUNCTION_2_ARN
+        run: |
+          aws lambda update-function-code --region eu-west-1 --publish --zip-file fileb://target/lambda/main/bootstrap.zip --function-name ${{vars.LAMBDA_FUNCTION_2_ARN}}
