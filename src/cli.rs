@@ -50,6 +50,32 @@ enum Commands {
     },
 }
 
+fn inject_smart_gate(
+    star_map: &mut HashMap<data::SolarSystemId, data::Star>,
+    from: u32,
+    to: u32,
+    distance: u16,
+    id: u32,
+) {
+    let from_id = tools::system_id_to_u16(from).unwrap();
+    let to_id = tools::system_id_to_u16(to).unwrap();
+    if let Some(from_system) = star_map.get_mut(&from_id) {
+        from_system.connections.insert(
+            0,
+            data::Connection {
+                conn_type: data::ConnType::SmartGate,
+                distance,
+                target: to_id,
+                id,
+            },
+        );
+        info!(
+            "Injected smart gate {} between {} and {} ({} ly)",
+            id, from, to, distance
+        );
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     use env_logger::Env;
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -189,19 +215,12 @@ fn main() -> anyhow::Result<()> {
             info!("Loaded star map in {:.3}", now.elapsed().as_secs_f64());
 
             // Inject a smart gate between
-            let from_id = tools::system_id_to_u16(30014020).unwrap();
-            let to_id = tools::system_id_to_u16(30013974).unwrap();
-            if let Some(from_system) = star_map.get_mut(&from_id) {
-                from_system.connections.insert(
-                    0,
-                    data::Connection {
-                        conn_type: data::ConnType::SmartGate,
-                        distance: 311,
-                        target: to_id,
-                        id: u32::MAX,
-                    },
-                );
-            }
+            inject_smart_gate(&mut star_map, 30013484, 30013460, 319, u32::MAX);
+            inject_smart_gate(&mut star_map, 30013460, 30013933, 440, u32::MAX - 1);
+            inject_smart_gate(&mut star_map, 30013933, 30022226, 229, u32::MAX - 2);
+            inject_smart_gate(&mut star_map, 30013460, 30013484, 319, u32::MAX - 3);
+            inject_smart_gate(&mut star_map, 30013933, 30013460, 440, u32::MAX - 4);
+            inject_smart_gate(&mut star_map, 30022226, 30013933, 229, u32::MAX - 5);
 
             let start = star_map
                 .get(&tools::system_id_to_u16(*start_id).unwrap())
