@@ -55,7 +55,15 @@ fn successors(
 /// - Return an approximation of the cost from this connection to the end
 /// - Must not return greater than the actual cost, or the path will be suboptimal
 ///   - Remember that in "optimise for fuel" mode, actual cost might be 1
-pub fn heuristic(star_map: &HashMap<SolarSystemId, Star>, conn: &Connection, end: &Star) -> i64 {
+pub fn heuristic(
+    star_map: &HashMap<SolarSystemId, Star>,
+    conn: &Connection,
+    end: &Star,
+    optimize: PathOptimize,
+) -> i64 {
+    if conn.conn_type != ConnType::Jump && optimize == PathOptimize::Fuel {
+        return 0;
+    }
     let d = star_map
         .get(&conn.target)
         .unwrap()
@@ -81,7 +89,7 @@ pub fn calc_path(
     let path = astar::astar(
         &init_conn,
         |conn| successors(&star_map, conn, jump_distance, optimize),
-        |conn| heuristic(&star_map, conn, end),
+        |conn| heuristic(&star_map, conn, end, optimize),
         |conn| conn.target == end.id,
         timeout,
     );
