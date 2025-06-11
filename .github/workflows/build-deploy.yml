@@ -10,11 +10,13 @@ on:
 permissions:
   id-token: write
   contents: read
+  packages: write
+  attestations: write
 
 jobs:
-  build-and-deploy:
+  lambda:
     concurrency:
-      group: "build-${{github.ref}}"
+      group: "lambda-${{github.ref}}"
       cancel-in-progress: false
     runs-on: "ubuntu-latest"
     environment: ${{github.ref_name}}
@@ -41,3 +43,39 @@ jobs:
         if: vars.LAMBDA_FUNCTION_2_ARN
         run: |
           aws lambda update-function-code --region eu-west-1 --publish --zip-file fileb://target/lambda/main/bootstrap.zip --function-name ${{vars.LAMBDA_FUNCTION_2_ARN}}
+  docker:
+    concurrency:
+      group: "docker-${{github.ref}}"
+      cancel-in-progress: true
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/evedatacore-route-planner
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build deployer image
+        id: build_and_push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          file: Dockerfile
+          context: .
+          platforms: linux/amd64
+          build-args: |
+            IMAGE_TAG=${{ github.ref_name }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
