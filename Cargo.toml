@@ -17,6 +17,10 @@ path = "src/main.rs"
 name = "cli"
 path = "src/cli.rs"
 
+[[bin]]
+name = "api"
+path = "src/api.rs"
+
 [lib]
 name = "evedatacore_route_planner"
 path = "src/lib.rs"
@@ -41,6 +45,7 @@ serde_json = "1.0.133"
 uom = { version = "0.36.0", features = ["serde"] }
 lambda_runtime = "0.13.0"
 tokio = { version = "1", features = ["macros"] }
+rocket = { version = "0.5.1", features = ["serde_json", "json"] }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
