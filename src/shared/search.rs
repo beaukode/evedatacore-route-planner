@@ -11,12 +11,12 @@ use super::astar;
 use super::data::*;
 use super::tools;
 
-pub fn near(star_map: &HashMap<SolarSystemId, Star>, star: &Star, max_distance: u16) -> NearResult {
+pub fn near(star_map: &HashMap<SolarSystemId, Star>, star: &Star, distance: u16) -> NearResult {
     NearResult {
         connections: star
             .connections
             .iter()
-            .take_while(|c| c.conn_type == ConnType::Jump && c.distance <= max_distance)
+            .take_while(|c| c.conn_type == ConnType::Jump && c.distance <= distance)
             .map(|c| PathResultConnection {
                 conn_type: c.conn_type.clone(),
                 distance: c.distance,

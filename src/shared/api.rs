@@ -24,7 +24,7 @@ use super::tools;
 // ====================================================================
 // common
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct SmartGateLink {
     pub from: u32,
     pub to: u32,
@@ -62,7 +62,7 @@ impl From<anyhow::Error> for CustomError {
 }
 
 // POST /api/path
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct PathPayload {
     pub from: u32,
     pub to: u32,
@@ -77,6 +77,7 @@ pub struct PathPayload {
     responses(
         (status = 200, description = "Success", body = data::PathResult),
     ),
+    request_body(content = PathPayload, description = "The payload to calculate the path"),
 )]
 #[rocket::post("/path", data = "<payload>")]
 pub fn calc_path(
@@ -131,10 +132,10 @@ pub fn calc_path(
 }
 
 // POST /api/near
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct NearPayload {
     pub from: u32,
-    pub max_distance: u16,
+    pub distance: u16,
 }
 
 /// Find the nearest stars to a given star
@@ -146,6 +147,7 @@ pub struct NearPayload {
     responses(
         (status = 200, description = "Success", body = data::NearResult),
     ),
+    request_body(content = NearPayload, description = "The payload to calculate the nearest stars"),
 )]
 #[rocket::post("/near", data = "<payload>")]
 pub fn calc_near(
@@ -158,7 +160,7 @@ pub fn calc_near(
     let star = star_map
         .get(&tools::system_id_to_u16(payload.from).unwrap())
         .unwrap();
-    let result = search::near(&star_map, star, payload.max_distance);
+    let result = search::near(&star_map, star, payload.distance);
     Json(result)
 }
 

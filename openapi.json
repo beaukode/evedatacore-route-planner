@@ -15,6 +15,17 @@
         "summary": "Find the nearest stars to a given star",
         "description": "Returns the nearest stars to a given star",
         "operationId": "calc_near",
+        "requestBody": {
+          "description": "The payload to calculate the nearest stars",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NearPayload"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -33,6 +44,17 @@
       "post": {
         "tags": [],
         "operationId": "calc_path",
+        "requestBody": {
+          "description": "The payload to calculate the path",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathPayload"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -58,6 +80,25 @@
           "jump"
         ]
       },
+      "NearPayload": {
+        "type": "object",
+        "required": [
+          "from",
+          "distance"
+        ],
+        "properties": {
+          "distance": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "from": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
       "NearResult": {
         "type": "object",
         "required": [
@@ -69,6 +110,56 @@
             "items": {
               "$ref": "#/components/schemas/PathResultConnection"
             }
+          }
+        }
+      },
+      "PathOptimize": {
+        "type": "string",
+        "enum": [
+          "fuel",
+          "distance",
+          "hops"
+        ]
+      },
+      "PathPayload": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "jump_distance",
+          "smart_gates"
+        ],
+        "properties": {
+          "from": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "jump_distance": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "optimize": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PathOptimize"
+              }
+            ]
+          },
+          "smart_gates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SmartGateLink"
+            }
+          },
+          "to": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
           }
         }
       },
@@ -163,6 +254,37 @@
           "notfound",
           "timeout"
         ]
+      },
+      "SmartGateLink": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "distance",
+          "id"
+        ],
+        "properties": {
+          "distance": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "from": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "to": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
       }
     }
   }
