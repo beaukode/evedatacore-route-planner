@@ -22,6 +22,7 @@ mod shared;
 use shared::data;
 use shared::data::{SolarSystemId, Star};
 use shared::path;
+use shared::search;
 use shared::tools;
 
 // ====================================================================
@@ -126,6 +127,28 @@ fn calc_path(
     Json(path)
 }
 
+// POST /api/near
+#[derive(Debug, Deserialize)]
+struct NearPayload {
+    pub from: u32,
+    pub max_distance: u16,
+}
+
+#[post("/near", data = "<payload>")]
+fn calc_near(
+    star_map: &State<data::StarMap>,
+    payload: Json<NearPayload>,
+) -> Json<data::NearResult> {
+    info!("Payload: {:?}", payload);
+    let start_time = std::time::Instant::now();
+
+    let star = star_map
+        .get(&tools::system_id_to_u16(payload.from).unwrap())
+        .unwrap();
+    let result = search::near(&star_map, star, payload.max_distance);
+    Json(result)
+}
+
 #[get("/")]
 fn root() -> &'static str {
     ""
@@ -149,6 +172,6 @@ fn rocket() -> _ {
 
     rocket::build()
         .manage(map)
-        .mount("/api", routes![calc_path])
+        .mount("/api", routes![calc_path, calc_near])
         .mount("/", routes![root])
 }
