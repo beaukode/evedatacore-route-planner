@@ -11,14 +11,6 @@ use super::astar;
 use super::data::*;
 use super::tools;
 
-#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum PathOptimize {
-    Fuel,
-    Distance,
-    Hops,
-}
-
 /// Given a connection, return a list of all possible next-connections,
 /// and what each of those connections costs
 fn successors(

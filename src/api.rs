@@ -41,7 +41,7 @@ pub struct EventPayload {
     pub from: u32,
     pub to: u32,
     pub jump_distance: u16,
-    pub optimize: Option<path::PathOptimize>,
+    pub optimize: Option<data::PathOptimize>,
     pub smart_gates: Vec<SmartGateLink>,
 }
 
@@ -71,7 +71,7 @@ struct PathPayload {
     pub from: u32,
     pub to: u32,
     pub jump_distance: u16,
-    pub optimize: Option<path::PathOptimize>,
+    pub optimize: Option<data::PathOptimize>,
     pub smart_gates: Vec<SmartGateLink>,
 }
 

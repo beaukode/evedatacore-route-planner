@@ -45,7 +45,7 @@ enum Commands {
         #[clap(short, long, default_value = "150")]
         jump_distance: u16,
         #[clap(short, long, default_value = "fuel")]
-        optimize: path::PathOptimize,
+        optimize: data::PathOptimize,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
     },

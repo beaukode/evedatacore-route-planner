@@ -9,6 +9,14 @@ use log::info;
 pub type ConnectionId = u32;
 pub type SolarSystemId = u16;
 
+#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PathOptimize {
+    Fuel,
+    Distance,
+    Hops,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum ConnType {

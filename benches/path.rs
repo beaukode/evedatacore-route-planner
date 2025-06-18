@@ -35,7 +35,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                         start,
                         end,
                         black_box(*distance),
-                        evedatacore_route_planner::path::PathOptimize::Distance,
+                        evedatacore_route_planner::data::PathOptimize::Distance,
                         Some(300),
                     );
                 })
@@ -60,7 +60,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                         start,
                         end,
                         black_box(*distance),
-                        evedatacore_route_planner::path::PathOptimize::Distance,
+                        evedatacore_route_planner::data::PathOptimize::Distance,
                         Some(300),
                     );
                 })
@@ -85,7 +85,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                         start,
                         end,
                         black_box(*distance),
-                        evedatacore_route_planner::path::PathOptimize::Distance,
+                        evedatacore_route_planner::data::PathOptimize::Distance,
                         Some(300),
                     );
                 })
@@ -110,7 +110,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                         start,
                         end,
                         black_box(*distance),
-                        evedatacore_route_planner::path::PathOptimize::Distance,
+                        evedatacore_route_planner::data::PathOptimize::Distance,
                         Some(300),
                     );
                 })
