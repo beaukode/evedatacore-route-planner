@@ -31,11 +31,47 @@ pub struct RawJump {
     pub to_system_id: u32,
 }
 
-
-
 #[derive(Debug, Deserialize)]
 pub struct RawSolarSystem {
+    #[serde(deserialize_with = "deserialize_center")]
     pub center: [f64; 3],
+}
+
+fn deserialize_center<'de, D>(deserializer: D) -> Result<[f64; 3], D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct CenterVisitor;
+
+    impl<'de> Visitor<'de> for CenterVisitor {
+        type Value = [f64; 3];
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("an array of 3 numbers or strings that can be parsed as numbers")
+        }
+
+        fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: SeqAccess<'de>,
+        {
+            let mut result = [0.0; 3];
+            for i in 0..3 {
+                let value = seq.next_element::<serde_json::Value>()?;
+                match value {
+                    Some(serde_json::Value::Number(n)) => {
+                        result[i] = n.as_f64().ok_or_else(|| de::Error::custom("invalid number"))?;
+                    }
+                    Some(serde_json::Value::String(s)) => {
+                        result[i] = s.parse::<f64>().map_err(de::Error::custom)?;
+                    }
+                    _ => return Err(de::Error::custom("expected number or string")),
+                }
+            }
+            Ok(result)
+        }
+    }
+
+    deserializer.deserialize_seq(CenterVisitor)
 }
 
 #[derive(Debug, Deserialize)]
