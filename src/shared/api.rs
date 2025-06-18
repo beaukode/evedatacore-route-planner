@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate rocket;
-
 use log::{info, warn};
 use std::collections::HashMap;
 use std::io::Cursor;
@@ -17,13 +14,12 @@ use serde::{Deserialize, Serialize};
 use uom::si::f64::*;
 use uom::si::length::light_year;
 use uom::si::mass::kilogram;
+use utoipa::{OpenApi, ToSchema};
 
-mod shared;
-use shared::data;
-use shared::data::{SolarSystemId, Star};
-use shared::path;
-use shared::search;
-use shared::tools;
+use super::data;
+use super::path;
+use super::search;
+use super::tools;
 
 // ====================================================================
 // common
@@ -67,7 +63,7 @@ impl From<anyhow::Error> for CustomError {
 
 // POST /api/path
 #[derive(Debug, Deserialize)]
-struct PathPayload {
+pub struct PathPayload {
     pub from: u32,
     pub to: u32,
     pub jump_distance: u16,
@@ -75,8 +71,15 @@ struct PathPayload {
     pub smart_gates: Vec<SmartGateLink>,
 }
 
-#[post("/path", data = "<payload>")]
-fn calc_path(
+#[utoipa::path(
+    post,
+    path = "/path",
+    responses(
+        (status = 200, description = "Success", body = data::PathResult),
+    ),
+)]
+#[rocket::post("/path", data = "<payload>")]
+pub fn calc_path(
     star_map: &State<data::StarMap>,
     payload: Json<PathPayload>,
 ) -> Json<data::PathResult> {
@@ -129,13 +132,23 @@ fn calc_path(
 
 // POST /api/near
 #[derive(Debug, Deserialize)]
-struct NearPayload {
+pub struct NearPayload {
     pub from: u32,
     pub max_distance: u16,
 }
 
-#[post("/near", data = "<payload>")]
-fn calc_near(
+/// Find the nearest stars to a given star
+///
+/// Returns the nearest stars to a given star
+#[utoipa::path(
+    post,
+    path = "/near",
+    responses(
+        (status = 200, description = "Success", body = data::NearResult),
+    ),
+)]
+#[rocket::post("/near", data = "<payload>")]
+pub fn calc_near(
     star_map: &State<data::StarMap>,
     payload: Json<NearPayload>,
 ) -> Json<data::NearResult> {
@@ -149,29 +162,9 @@ fn calc_near(
     Json(result)
 }
 
-#[get("/")]
-fn root() -> &'static str {
-    ""
-}
-
-#[launch]
-fn rocket() -> _ {
-    use env_logger::Env;
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-
-    let path = std::env::var("STARMAP_PATH").unwrap_or_else(|_| String::from("data/starmap.bin"));
-    info!("Loading star map from {}", path);
-    let start = std::time::Instant::now();
-    let map: data::StarMap = data::get_star_map(&path).unwrap();
-
-    info!(
-        "Star map loaded with {} stars in {}ms",
-        map.len(),
-        start.elapsed().as_millis()
-    );
-
-    rocket::build()
-        .manage(map)
-        .mount("/api", routes![calc_path, calc_near])
-        .mount("/", routes![root])
-}
+#[derive(OpenApi)]
+#[openapi(
+    paths(calc_path, calc_near),
+    components(schemas(data::PathResult, data::NearResult))
+)]
+pub struct ApiDoc;

@@ -1,3 +1,4 @@
+pub mod api;
 pub mod astar;
 pub mod data;
 pub mod path;

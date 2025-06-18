@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
+
 use uom::si::f64::*;
 use uom::si::length::meter;
 
@@ -17,7 +19,7 @@ pub enum PathOptimize {
     Hops,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, ToSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum ConnType {
     Gate,
@@ -102,7 +104,7 @@ pub fn get_star_map(path: &str) -> anyhow::Result<StarMap> {
     Ok(map)
 }
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, Debug, ToSchema)]
 pub struct PathResultStats {
     pub cost: i64,
     pub total_time: u128,
@@ -111,7 +113,7 @@ pub struct PathResultStats {
     pub visited: u64,
 }
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, Debug, ToSchema)]
 pub struct PathResultConnection {
     pub conn_type: ConnType,
     pub distance: u16,
@@ -119,7 +121,7 @@ pub struct PathResultConnection {
     pub id: u32,
 }
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, Debug, ToSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum PathResultStatus {
     Found,
@@ -127,14 +129,14 @@ pub enum PathResultStatus {
     Timeout,
 }
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, Debug, ToSchema)]
 pub struct PathResult {
     pub status: PathResultStatus,
     pub path: Vec<PathResultConnection>,
     pub stats: PathResultStats,
 }
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, Debug, ToSchema)]
 pub struct NearResult {
     pub connections: Vec<PathResultConnection>,
 }

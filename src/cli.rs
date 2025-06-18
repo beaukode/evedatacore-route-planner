@@ -16,6 +16,9 @@ use shared::path;
 use shared::raw;
 use shared::search;
 use shared::tools;
+use shared::api::ApiDoc;
+use utoipa::OpenApi;
+
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -55,6 +58,11 @@ enum Commands {
         max_distance: u16,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
+    },
+    /// Generate the API documentation
+    ApiDoc {
+        #[clap(short, long, default_value = "openapi.json")]
+        dest: String,
     },
 }
 
@@ -281,6 +289,12 @@ fn main() -> anyhow::Result<()> {
                 .unwrap();
             let result = search::near(&star_map, star, *max_distance);
             println!("{}", serde_json::to_string_pretty(&result)?);
+        }
+        Some(Commands::ApiDoc { dest }) => {
+            let api_doc = ApiDoc::openapi();
+            let json = serde_json::to_string_pretty(&api_doc)?;
+            std::fs::write(dest, json)?;
+            info!("API documentation written to {}", dest);
         }
         None => {
             warn!("No command specified");
