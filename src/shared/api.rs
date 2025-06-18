@@ -2,6 +2,7 @@ use log::{info, warn};
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::path::Path;
+use std::sync::Arc;
 
 use rocket::fs::NamedFile;
 use rocket::http::ContentType;
@@ -10,6 +11,8 @@ use rocket::request::Request;
 use rocket::response::{self, Responder, Response};
 use rocket::serde::json::Json;
 use rocket::State;
+use tokio::sync::Semaphore;
+
 use serde::{Deserialize, Serialize};
 use uom::si::f64::*;
 use uom::si::length::light_year;
@@ -80,11 +83,17 @@ pub struct PathPayload {
     request_body(content = PathPayload, description = "The payload to calculate the path"),
 )]
 #[rocket::post("/path", data = "<payload>")]
-pub fn calc_path(
+pub async fn calc_path(
     star_map: &State<data::StarMap>,
+    semaphore: &State<Arc<Semaphore>>,
     payload: Json<PathPayload>,
 ) -> Json<data::PathResult> {
     info!("Payload: {:?}", payload);
+    let _permit = semaphore
+        .acquire()
+        .await
+        .expect("Max concurrent requests reached, try again later");
+
     let start_time = std::time::Instant::now();
 
     let mut star_map_copy = star_map.inner().clone();
