@@ -16,8 +16,8 @@ pub fn near(star_map: &HashMap<SolarSystemId, Star>, star: &Star, distance: u16)
         connections: star
             .connections
             .iter()
-            .take_while(|c| c.distance <= distance)
             .filter(|c| c.conn_type == ConnType::Jump)
+            .take_while(|c| c.distance <= distance)
             .map(|c| PathResultConnection {
                 conn_type: c.conn_type.clone(),
                 distance: c.distance,
