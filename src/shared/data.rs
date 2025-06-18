@@ -125,3 +125,8 @@ pub struct PathResult {
     pub path: Vec<PathResultConnection>,
     pub stats: PathResultStats,
 }
+
+#[derive(serde::Serialize, Debug)]
+pub struct NearResult {
+    pub connections: Vec<PathResultConnection>,
+}

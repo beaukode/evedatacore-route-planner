@@ -14,6 +14,7 @@ use shared::astar;
 use shared::data;
 use shared::path;
 use shared::raw;
+use shared::search;
 use shared::tools;
 
 #[derive(Parser)]
@@ -45,6 +46,13 @@ enum Commands {
         jump_distance: u16,
         #[clap(short, long, default_value = "fuel")]
         optimize: path::PathOptimize,
+        #[clap(short, long, default_value = "data/starmap.bin")]
+        source: String,
+    },
+    /// Find the near stars to a given star
+    Near {
+        star_id: u32,
+        max_distance: u16,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
     },
@@ -257,6 +265,22 @@ fn main() -> anyhow::Result<()> {
                 path.stats.loop_spend,
                 path.stats.total_time,
             );
+        }
+        Some(Commands::Near {
+            star_id,
+            max_distance,
+            source,
+        }) => {
+            info!("Loading star map");
+            let now = Instant::now();
+            let star_map = data::get_star_map(source)?;
+            info!("Loaded star map in {:.3}", now.elapsed().as_secs_f64());
+
+            let star = star_map
+                .get(&tools::system_id_to_u16(*star_id).unwrap())
+                .unwrap();
+            let result = search::near(&star_map, star, *max_distance);
+            println!("{}", serde_json::to_string_pretty(&result)?);
         }
         None => {
             warn!("No command specified");
