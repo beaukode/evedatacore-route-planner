@@ -99,6 +99,8 @@ pub fn save_star_map(star_map: &HashMap<SolarSystemId, Star>, dest: &str) -> any
 
 pub type StarMap = HashMap<SolarSystemId, Star>;
 
+pub type SmartGatesMap = HashMap<SolarSystemId, Vec<Connection>>;
+
 pub fn get_star_map(path: &str) -> anyhow::Result<StarMap> {
     let map: StarMap = bincode::deserialize(&std::fs::read(path)?)?;
     Ok(map)

@@ -17,6 +17,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
     let star_map =
         evedatacore_route_planner::data::get_star_map(black_box("data/starmap.bin")).unwrap();
+    let smart_gates_map: evedatacore_route_planner::data::SmartGatesMap = HashMap::new();
     for distance_factor in 0..10 {
         let distance: u16 = 50 + distance_factor * 50;
         group.bench_with_input(
@@ -32,6 +33,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 b.iter(|| {
                     let path = evedatacore_route_planner::path::calc_path(
                         &star_map,
+                        &smart_gates_map,
                         start,
                         end,
                         black_box(*distance),
@@ -57,6 +59,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 b.iter(|| {
                     let path = evedatacore_route_planner::path::calc_path(
                         &star_map,
+                        &smart_gates_map,
                         start,
                         end,
                         black_box(*distance),
@@ -82,6 +85,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 b.iter(|| {
                     let path = evedatacore_route_planner::path::calc_path(
                         &star_map,
+                        &smart_gates_map,
                         start,
                         end,
                         black_box(*distance),
@@ -107,6 +111,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 b.iter(|| {
                     let path = evedatacore_route_planner::path::calc_path(
                         &star_map,
+                        &smart_gates_map,
                         start,
                         end,
                         black_box(*distance),

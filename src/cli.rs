@@ -10,15 +10,14 @@ use uom::si::length::light_year;
 use uom::si::mass::kilogram;
 
 mod shared;
+use shared::api::ApiDoc;
 use shared::astar;
 use shared::data;
 use shared::path;
 use shared::raw;
 use shared::search;
 use shared::tools;
-use shared::api::ApiDoc;
 use utoipa::OpenApi;
-
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -247,7 +246,16 @@ fn main() -> anyhow::Result<()> {
 
             info!("Finding path");
             let now = Instant::now();
-            let path = path::calc_path(&star_map, start, end, *jump_distance, *optimize, Some(60));
+            let smart_gates_map: data::SmartGatesMap = HashMap::new();
+            let path = path::calc_path(
+                &star_map,
+                &smart_gates_map,
+                start,
+                end,
+                *jump_distance,
+                *optimize,
+                Some(60),
+            );
             let mut last_id = tools::u16_to_system_id(start.id);
             let path_len = path.path.len();
             for conn in path.path {

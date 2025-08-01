@@ -96,39 +96,41 @@ pub async fn calc_path(
 
     let start_time = std::time::Instant::now();
 
-    let mut star_map_copy = star_map.inner().clone();
+    let mut smart_gates_map: data::SmartGatesMap = HashMap::new();
     for smart_gate in &payload.smart_gates {
         let from_id = tools::system_id_to_u16(smart_gate.from).unwrap();
         let to_id = tools::system_id_to_u16(smart_gate.to).unwrap();
-        if let Some(from_system) = star_map_copy.get_mut(&from_id) {
-            from_system.connections.insert(
-                0,
-                data::Connection {
-                    conn_type: data::ConnType::SmartGate,
-                    distance: smart_gate.distance,
-                    target: to_id,
-                    id: smart_gate.id,
-                },
-            );
+        if !smart_gates_map.contains_key(&from_id) {
+            smart_gates_map.insert(from_id, Vec::new());
         }
+        smart_gates_map
+            .get_mut(&from_id)
+            .unwrap()
+            .push(data::Connection {
+                conn_type: data::ConnType::SmartGate,
+                distance: smart_gate.distance,
+                target: to_id,
+                id: smart_gate.id,
+            });
     }
 
     let elapsed = start_time.elapsed().as_millis();
     info!(
-        "Time to inject {} smart gates: {}ms",
+        "Time to create {} smart gates map: {}ms",
         payload.smart_gates.len(),
         elapsed
     );
 
-    let start = star_map_copy
+    let start = star_map
         .get(&tools::system_id_to_u16(payload.from).unwrap())
         .unwrap();
-    let end = star_map_copy
+    let end = star_map
         .get(&tools::system_id_to_u16(payload.to).unwrap())
         .unwrap();
 
     let path = path::calc_path(
-        &star_map_copy,
+        &star_map,
+        &smart_gates_map,
         start,
         end,
         payload.jump_distance,

@@ -5,23 +5,32 @@ use serde::{Deserialize, Serialize};
 use uom::si::f64::*;
 use uom::si::length::light_year;
 
-use log::info;
-
 use super::astar;
 use super::data::*;
 use super::tools;
+
+// Static empty vector to avoid creating a new one on each function call
+static EMPTY_CONNECTIONS: &Vec<Connection> = &Vec::new();
 
 /// Given a connection, return a list of all possible next-connections,
 /// and what each of those connections costs
 fn successors(
     star_map: &HashMap<SolarSystemId, Star>,
+    smart_gates_map: &SmartGatesMap,
     conn: &Connection,
     jump_distance: u16,
     optimize: PathOptimize,
 ) -> Vec<(Connection, i64)> {
     let star = star_map.get(&conn.target).unwrap();
-    star.connections
+
+    let smart_gates = smart_gates_map
+        .get(&conn.target)
+        .unwrap_or(&EMPTY_CONNECTIONS);
+
+    // Chain smart_gates first, then star.connections
+    smart_gates
         .iter()
+        .chain(star.connections.iter())
         // take gates and short jumps - stop searching after we
         // find a long jump
         .take_while(|c| c.conn_type != ConnType::Jump || c.distance <= jump_distance)
@@ -65,7 +74,8 @@ pub fn heuristic(
 }
 
 pub fn calc_path(
-    star_map: &HashMap<SolarSystemId, Star>,
+    star_map: &StarMap,
+    smart_gates_map: &SmartGatesMap,
     start: &Star,
     end: &Star,
     jump_distance: u16,
@@ -80,7 +90,7 @@ pub fn calc_path(
     };
     let path = astar::astar(
         &init_conn,
-        |conn| successors(&star_map, conn, jump_distance, optimize),
+        |conn| successors(&star_map, &smart_gates_map, conn, jump_distance, optimize),
         |conn| heuristic(&star_map, conn, end, optimize),
         |conn| conn.target == end.id,
         timeout,
