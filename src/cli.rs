@@ -50,6 +50,8 @@ enum Commands {
         optimize: data::PathOptimize,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
+        #[clap(short, long, default_value = "data/solarsystems.json")]
+        solarsystems: String,
     },
     /// Find the near stars to a given star
     Near {
@@ -223,11 +225,17 @@ fn main() -> anyhow::Result<()> {
             jump_distance,
             optimize,
             source,
+            solarsystems,
         }) => {
-            info!("Loading star map");
-            let now = Instant::now();
+            info!("Loading star map {}", source);
+            let mut now = Instant::now();
             let mut star_map = data::get_star_map(source)?;
             info!("Loaded star map in {:.3}", now.elapsed().as_secs_f64());
+
+            info!("Loading solar systems {}", solarsystems);
+            now = Instant::now();
+            let solar_systems = raw::SolarSystems::from_file(solarsystems);
+            info!("Loaded solar systems in {:.3}", now.elapsed().as_secs_f64());
 
             // Inject a smart gate between
             inject_smart_gate(&mut star_map, 30013484, 30013460, 319.0, u32::MAX);
@@ -260,14 +268,21 @@ fn main() -> anyhow::Result<()> {
             let path_len = path.path.len();
             for conn in path.path {
                 println!(
-                    "{} -> {} ({:?}, {} ly)",
-                    last_id, conn.target, conn.conn_type, conn.distance
+                    "{} ({}) -> {} ({}) ({:?}, {} ly)",
+                    solar_systems.get_name(&last_id),
+                    last_id,
+                    solar_systems.get_name(&conn.target),
+                    conn.target,
+                    conn.conn_type,
+                    conn.distance
                 );
                 last_id = conn.target;
             }
             println!(
-                "Path from {} to {}: {:?} {} nodes in {:.3}s",
+                "Path from {} ({}) to {} ({}): {:?} {} nodes in {:.3}s",
+                solar_systems.get_name(start_id),
                 start_id,
+                solar_systems.get_name(end_id),
                 end_id,
                 path.status,
                 path_len,

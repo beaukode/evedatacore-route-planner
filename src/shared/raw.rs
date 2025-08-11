@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use serde::de::{self, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
-use serde::de::{self, Visitor, SeqAccess};
+use std::collections::HashMap;
 use std::fmt;
 
 // ====================================================================
@@ -11,7 +11,7 @@ use std::fmt;
 pub struct RawStarMap {
     pub jumps: Vec<RawJump>,
     #[serde(rename(deserialize = "solarSystems"))]
-    pub solar_systems: HashMap<String, RawSolarSystem>,
+    pub solar_systems: HashMap<String, RawStar>,
 }
 
 impl RawStarMap {
@@ -32,7 +32,7 @@ pub struct RawJump {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct RawSolarSystem {
+pub struct RawStar {
     #[serde(deserialize_with = "deserialize_center")]
     pub center: [f64; 3],
 }
@@ -59,7 +59,9 @@ where
                 let value = seq.next_element::<serde_json::Value>()?;
                 match value {
                     Some(serde_json::Value::Number(n)) => {
-                        result[i] = n.as_f64().ok_or_else(|| de::Error::custom("invalid number"))?;
+                        result[i] = n
+                            .as_f64()
+                            .ok_or_else(|| de::Error::custom("invalid number"))?;
                     }
                     Some(serde_json::Value::String(s)) => {
                         result[i] = s.parse::<f64>().map_err(de::Error::custom)?;
@@ -74,8 +76,29 @@ where
     deserializer.deserialize_seq(CenterVisitor)
 }
 
+// ====================================================================
+// Data structures for the solarsystems
+// ====================================================================
+
 #[derive(Debug, Deserialize)]
-pub struct RawStar {
+pub struct SolarSystems(HashMap<u32, RawSolarSystem>);
+
+impl SolarSystems {
+    pub fn from_file(file: &str) -> Self {
+        let file = std::fs::read_to_string(file).unwrap();
+        serde_json::from_str(&file).unwrap()
+    }
+
+    pub fn get_name(&self, id: &u32) -> String {
+        self.0
+            .get(id)
+            .map(|system| system.solar_system_name.clone())
+            .unwrap_or_default()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RawSolarSystem {
     #[serde(rename(deserialize = "solarSystemId"))]
     pub solar_system_id: u64,
     #[serde(rename(deserialize = "solarSystemName"))]
