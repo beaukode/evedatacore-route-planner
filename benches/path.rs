@@ -21,7 +21,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     // Basic close target
     for distance_factor in 0..10 {
-        let distance: u16 = 50 + distance_factor * 50;
+        let distance: f64 = 50.0 + (distance_factor as f64) * 50.0;
         group.bench_with_input(
             BenchmarkId::new("504ly", &distance),
             &distance,
@@ -49,7 +49,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     // Basic long target
     for distance_factor in 0..3 {
-        let distance: u16 = 200 + distance_factor * 100;
+        let distance: f64 = 200.0 + (distance_factor as f64) * 100.0;
         group.bench_with_input(
             BenchmarkId::new("4289ly", &distance),
             &distance,
@@ -76,60 +76,56 @@ fn criterion_benchmark(c: &mut Criterion) {
     }
 
     // Hard long target
-    for distance_factor in 0..3 {
-        let distance: u16 = 200 + distance_factor * 100;
-        group.bench_with_input(
-            BenchmarkId::new("4618ly", &distance),
-            &distance,
-            |b, distance| {
-                let start = star_map
-                    .get(&evedatacore_route_planner::tools::system_id_to_u16(30013115).unwrap())
-                    .unwrap();
-                let end = star_map
-                    .get(&evedatacore_route_planner::tools::system_id_to_u16(30022683).unwrap())
-                    .unwrap();
-                b.iter(|| {
-                    let path = evedatacore_route_planner::path::calc_path(
-                        &star_map,
-                        &smart_gates_map,
-                        start,
-                        end,
-                        black_box(*distance),
-                        evedatacore_route_planner::data::PathOptimize::Distance,
-                        None,
-                    );
-                })
-            },
-        );
-    }
+    let distance = 500.0;
+    group.bench_with_input(
+        BenchmarkId::new("4618ly", distance),
+        &distance,
+        |b, distance| {
+            let start = star_map
+                .get(&evedatacore_route_planner::tools::system_id_to_u16(30013115).unwrap())
+                .unwrap();
+            let end = star_map
+                .get(&evedatacore_route_planner::tools::system_id_to_u16(30022683).unwrap())
+                .unwrap();
+            b.iter(|| {
+                let path = evedatacore_route_planner::path::calc_path(
+                    &star_map,
+                    &smart_gates_map,
+                    start,
+                    end,
+                    black_box(*distance),
+                    evedatacore_route_planner::data::PathOptimize::Distance,
+                    None,
+                );
+            })
+        },
+    );
 
     // Far target
-    for distance_factor in 0..2 {
-        let distance: u16 = 400 + distance_factor * 100;
-        group.bench_with_input(
-            BenchmarkId::new("7610ly", &distance),
-            &distance,
-            |b, distance| {
-                let start = star_map
-                    .get(&evedatacore_route_planner::tools::system_id_to_u16(30020103).unwrap())
-                    .unwrap();
-                let end = star_map
-                    .get(&evedatacore_route_planner::tools::system_id_to_u16(30022683).unwrap())
-                    .unwrap();
-                b.iter(|| {
-                    let path = evedatacore_route_planner::path::calc_path(
-                        &star_map,
-                        &smart_gates_map,
-                        start,
-                        end,
-                        black_box(*distance),
-                        evedatacore_route_planner::data::PathOptimize::Distance,
-                        None,
-                    );
-                })
-            },
-        );
-    }
+    let distance = 500.0;
+    group.bench_with_input(
+        BenchmarkId::new("7610ly", distance),
+        &distance,
+        |b, distance| {
+            let start = star_map
+                .get(&evedatacore_route_planner::tools::system_id_to_u16(30020103).unwrap())
+                .unwrap();
+            let end = star_map
+                .get(&evedatacore_route_planner::tools::system_id_to_u16(30022683).unwrap())
+                .unwrap();
+            b.iter(|| {
+                let path = evedatacore_route_planner::path::calc_path(
+                    &star_map,
+                    &smart_gates_map,
+                    start,
+                    end,
+                    black_box(*distance),
+                    evedatacore_route_planner::data::PathOptimize::Distance,
+                    None,
+                );
+            })
+        },
+    );
     group.finish();
 }
 

@@ -45,7 +45,7 @@ enum Commands {
         start_id: u32,
         end_id: u32,
         #[clap(short, long, default_value = "150")]
-        jump_distance: u16,
+        jump_distance: f64,
         #[clap(short, long, default_value = "fuel")]
         optimize: data::PathOptimize,
         #[clap(short, long, default_value = "data/starmap.bin")]
@@ -54,7 +54,7 @@ enum Commands {
     /// Find the near stars to a given star
     Near {
         star_id: u32,
-        max_distance: u16,
+        max_distance: f64,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
     },
@@ -69,7 +69,7 @@ fn inject_smart_gate(
     star_map: &mut HashMap<data::SolarSystemId, data::Star>,
     from: u32,
     to: u32,
-    distance: u16,
+    distance: f64,
     id: u32,
 ) {
     let from_id = tools::system_id_to_u16(from).unwrap();
@@ -154,7 +154,7 @@ fn main() -> anyhow::Result<()> {
                     from_star.connections.push(data::Connection {
                         id: conn_count,
                         conn_type,
-                        distance: distance.get::<light_year>() as u16,
+                        distance: distance.get::<light_year>() as f64,
                         target: tid,
                     });
                     conn_count += 1;
@@ -197,7 +197,7 @@ fn main() -> anyhow::Result<()> {
                         star.connections.push(data::Connection {
                             id: conn_count,
                             conn_type: data::ConnType::Jump,
-                            distance: distance.get::<light_year>() as u16,
+                            distance: distance.get::<light_year>(),
                             target: other_star.id,
                         });
                         conn_count += 1;
@@ -230,12 +230,12 @@ fn main() -> anyhow::Result<()> {
             info!("Loaded star map in {:.3}", now.elapsed().as_secs_f64());
 
             // Inject a smart gate between
-            inject_smart_gate(&mut star_map, 30013484, 30013460, 319, u32::MAX);
-            inject_smart_gate(&mut star_map, 30013460, 30013933, 440, u32::MAX - 1);
-            inject_smart_gate(&mut star_map, 30013933, 30022226, 229, u32::MAX - 2);
-            inject_smart_gate(&mut star_map, 30013460, 30013484, 319, u32::MAX - 3);
-            inject_smart_gate(&mut star_map, 30013933, 30013460, 440, u32::MAX - 4);
-            inject_smart_gate(&mut star_map, 30022226, 30013933, 229, u32::MAX - 5);
+            inject_smart_gate(&mut star_map, 30013484, 30013460, 319.0, u32::MAX);
+            inject_smart_gate(&mut star_map, 30013460, 30013933, 440.0, u32::MAX - 1);
+            inject_smart_gate(&mut star_map, 30013933, 30022226, 229.0, u32::MAX - 2);
+            inject_smart_gate(&mut star_map, 30013460, 30013484, 319.0, u32::MAX - 3);
+            inject_smart_gate(&mut star_map, 30013933, 30013460, 440.0, u32::MAX - 4);
+            inject_smart_gate(&mut star_map, 30022226, 30013933, 229.0, u32::MAX - 5);
 
             let start = star_map
                 .get(&tools::system_id_to_u16(*start_id).unwrap())
@@ -252,7 +252,7 @@ fn main() -> anyhow::Result<()> {
                 &smart_gates_map,
                 start,
                 end,
-                *jump_distance,
+                *jump_distance as f64,
                 *optimize,
                 Some(60),
             );
