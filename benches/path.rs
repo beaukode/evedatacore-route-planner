@@ -4,20 +4,22 @@ use std::hint::black_box;
 use uom::si::f64::*;
 use uom::si::length::light_year;
 
+const STARMAP_PATH: &str = "data/starmap.bin";
+
 fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group(format!("benches").as_str());
     group.warm_up_time(std::time::Duration::from_secs(1));
     group.measurement_time(std::time::Duration::from_secs(1));
     group.sample_size(10);
-    group.bench_function(BenchmarkId::new("get_star_map", "data/starmap.bin"), |b| {
+    group.bench_function(BenchmarkId::new("get_star_map", STARMAP_PATH), |b| {
         b.iter(|| {
-            let _ = evedatacore_route_planner::data::get_star_map(black_box("data/starmap.bin"))
-                .unwrap();
+            let _ = evedatacore_route_planner::data::get_star_map(black_box(STARMAP_PATH)).unwrap();
         })
     });
-    let star_map =
-        evedatacore_route_planner::data::get_star_map(black_box("data/starmap.bin")).unwrap();
+    let star_map = evedatacore_route_planner::data::get_star_map(black_box(STARMAP_PATH)).unwrap();
     let smart_gates_map: evedatacore_route_planner::data::SmartGatesMap = HashMap::new();
+
+    // Basic close target
     for distance_factor in 0..10 {
         let distance: u16 = 50 + distance_factor * 50;
         group.bench_with_input(
@@ -38,14 +40,16 @@ fn criterion_benchmark(c: &mut Criterion) {
                         end,
                         black_box(*distance),
                         evedatacore_route_planner::data::PathOptimize::Distance,
-                        Some(300),
+                        None,
                     );
                 })
             },
         );
     }
-    for distance_factor in 0..10 {
-        let distance: u16 = 50 + distance_factor * 50;
+
+    // Basic long target
+    for distance_factor in 0..3 {
+        let distance: u16 = 200 + distance_factor * 100;
         group.bench_with_input(
             BenchmarkId::new("4289ly", &distance),
             &distance,
@@ -64,14 +68,16 @@ fn criterion_benchmark(c: &mut Criterion) {
                         end,
                         black_box(*distance),
                         evedatacore_route_planner::data::PathOptimize::Distance,
-                        Some(300),
+                        None,
                     );
                 })
             },
         );
     }
-    for distance_factor in 0..10 {
-        let distance: u16 = 50 + distance_factor * 50;
+
+    // Hard long target
+    for distance_factor in 0..3 {
+        let distance: u16 = 200 + distance_factor * 100;
         group.bench_with_input(
             BenchmarkId::new("4618ly", &distance),
             &distance,
@@ -90,14 +96,16 @@ fn criterion_benchmark(c: &mut Criterion) {
                         end,
                         black_box(*distance),
                         evedatacore_route_planner::data::PathOptimize::Distance,
-                        Some(300),
+                        None,
                     );
                 })
             },
         );
     }
-    for distance_factor in 0..10 {
-        let distance: u16 = 50 + distance_factor * 50;
+
+    // Far target
+    for distance_factor in 0..2 {
+        let distance: u16 = 400 + distance_factor * 100;
         group.bench_with_input(
             BenchmarkId::new("7610ly", &distance),
             &distance,
@@ -116,7 +124,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                         end,
                         black_box(*distance),
                         evedatacore_route_planner::data::PathOptimize::Distance,
-                        Some(300),
+                        None,
                     );
                 })
             },
