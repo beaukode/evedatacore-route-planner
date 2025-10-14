@@ -163,30 +163,6 @@ fn main() -> anyhow::Result<()> {
                 }
             }
 
-            // info!("Building connections from smart gates");
-            // let smart_gates: Vec<raw::RawSmartGate> =
-            //     serde_json::from_str(&std::fs::read_to_string("data/smartgates.json")?)?;
-            // for gate in smart_gates.iter() {
-            //     if !star_map.contains_key(&gate.from) {
-            //         warn!("Smart gate has unknown source {}", gate.from);
-            //         continue;
-            //     }
-            //     if !star_map.contains_key(&gate.to) {
-            //         warn!("Smart gate has unknown target {}", gate.to);
-            //         continue;
-            //     }
-            //     let to_star = star_map.get(&gate.to).unwrap().clone();
-            //     let from_star = star_map.get_mut(&gate.from).unwrap();
-            //     let distance: Length = from_star.distance(&to_star);
-            //     from_star.connections.push(data::Connection {
-            //         id: conn_count,
-            //         conn_type: data::ConnType::SmartGate,
-            //         distance,
-            //         target: gate.to,
-            //     });
-            //     conn_count += 1;
-            // }
-
             info!("Building connections from jumps");
             let cloned_star_map = star_map.clone();
             for star in star_map.values_mut().progress() {
