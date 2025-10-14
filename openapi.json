@@ -88,9 +88,8 @@
         ],
         "properties": {
           "distance": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
+            "type": "number",
+            "format": "double"
           },
           "from": {
             "type": "integer",
@@ -136,9 +135,8 @@
             "minimum": 0
           },
           "jump_distance": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
+            "type": "number",
+            "format": "double"
           },
           "optimize": {
             "oneOf": [
@@ -198,9 +196,8 @@
             "$ref": "#/components/schemas/ConnType"
           },
           "distance": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
+            "type": "number",
+            "format": "double"
           },
           "id": {
             "type": "integer",
@@ -265,9 +262,8 @@
         ],
         "properties": {
           "distance": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
+            "type": "number",
+            "format": "double"
           },
           "from": {
             "type": "integer",

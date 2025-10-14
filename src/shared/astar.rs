@@ -37,7 +37,7 @@ pub fn astar<N, C, FN, IN, FH, FS>(
 ) -> PathFindResult<N, C>
 where
     N: Eq + Hash + Clone,
-    C: Zero + Ord + Copy,
+    C: Zero + PartialOrd + Copy,
     FN: FnMut(&N) -> IN,
     IN: IntoIterator<Item = (N, C)>,
     FH: FnMut(&N) -> C,
@@ -151,17 +151,20 @@ impl<K: PartialEq> PartialEq for SmallestCostHolder<K> {
 
 impl<K: PartialEq> Eq for SmallestCostHolder<K> {}
 
-impl<K: Ord> PartialOrd for SmallestCostHolder<K> {
+impl<K: PartialOrd> PartialOrd for SmallestCostHolder<K> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<K: Ord> Ord for SmallestCostHolder<K> {
+impl<K: PartialOrd> Ord for SmallestCostHolder<K> {
     fn cmp(&self, other: &Self) -> Ordering {
-        match other.estimated_cost.cmp(&self.estimated_cost) {
-            Ordering::Equal => self.cost.cmp(&other.cost),
-            s => s,
+        match other.estimated_cost.partial_cmp(&self.estimated_cost) {
+            Some(Ordering::Equal) | None => match self.cost.partial_cmp(&other.cost) {
+                Some(o) => o,
+                None => Ordering::Equal,
+            },
+            Some(s) => s,
         }
     }
 }

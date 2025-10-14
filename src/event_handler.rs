@@ -11,7 +11,7 @@ use crate::shared::tools;
 pub struct SmartGateLink {
     pub from: u32,
     pub to: u32,
-    pub distance: u16,
+    pub distance: f64,
     pub id: u32,
 }
 
@@ -19,7 +19,7 @@ pub struct SmartGateLink {
 pub struct EventPayload {
     pub from: u32,
     pub to: u32,
-    pub jump_distance: u16,
+    pub jump_distance: f64,
     pub optimize: Option<data::PathOptimize>,
     pub smart_gates: Vec<SmartGateLink>,
 }
@@ -51,7 +51,7 @@ pub(crate) async fn function_handler(
             .unwrap()
             .push(data::Connection {
                 conn_type: data::ConnType::SmartGate,
-                distance: smart_gate.distance,
+                distance: smart_gate.distance as f64,
                 target: to_id,
                 id: smart_gate.id,
             });
@@ -76,7 +76,7 @@ pub(crate) async fn function_handler(
         &smart_gates_map,
         start,
         end,
-        payload.jump_distance,
+        payload.jump_distance as f64,
         payload.optimize.unwrap(),
         Some(25),
     );
@@ -108,7 +108,7 @@ mod tests {
             EventPayload {
                 from: 30001573,
                 to: 30013956,
-                jump_distance: 150,
+                jump_distance: 150.0,
                 optimize: Some(data::PathOptimize::Fuel),
                 smart_gates: vec![],
             },

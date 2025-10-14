@@ -31,7 +31,7 @@ use super::tools;
 pub struct SmartGateLink {
     pub from: u32,
     pub to: u32,
-    pub distance: u16,
+    pub distance: f64,
     pub id: u32,
 }
 
@@ -39,7 +39,7 @@ pub struct SmartGateLink {
 pub struct EventPayload {
     pub from: u32,
     pub to: u32,
-    pub jump_distance: u16,
+    pub jump_distance: f64,
     pub optimize: Option<data::PathOptimize>,
     pub smart_gates: Vec<SmartGateLink>,
 }
@@ -69,7 +69,7 @@ impl From<anyhow::Error> for CustomError {
 pub struct PathPayload {
     pub from: u32,
     pub to: u32,
-    pub jump_distance: u16,
+    pub jump_distance: f64,
     pub optimize: Option<data::PathOptimize>,
     pub smart_gates: Vec<SmartGateLink>,
 }
@@ -146,7 +146,7 @@ pub async fn calc_path(
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct NearPayload {
     pub from: u32,
-    pub distance: u16,
+    pub distance: f64,
 }
 
 /// Find the nearest stars to a given star

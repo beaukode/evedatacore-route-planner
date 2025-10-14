@@ -45,16 +45,18 @@ enum Commands {
         start_id: u32,
         end_id: u32,
         #[clap(short, long, default_value = "150")]
-        jump_distance: u16,
+        jump_distance: f64,
         #[clap(short, long, default_value = "fuel")]
         optimize: data::PathOptimize,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
+        #[clap(short, long, default_value = "data/solarsystems.json")]
+        solarsystems: String,
     },
     /// Find the near stars to a given star
     Near {
         star_id: u32,
-        max_distance: u16,
+        max_distance: f64,
         #[clap(short, long, default_value = "data/starmap.bin")]
         source: String,
     },
@@ -69,7 +71,7 @@ fn inject_smart_gate(
     star_map: &mut HashMap<data::SolarSystemId, data::Star>,
     from: u32,
     to: u32,
-    distance: u16,
+    distance: f64,
     id: u32,
 ) {
     let from_id = tools::system_id_to_u16(from).unwrap();
@@ -154,36 +156,12 @@ fn main() -> anyhow::Result<()> {
                     from_star.connections.push(data::Connection {
                         id: conn_count,
                         conn_type,
-                        distance: distance.get::<light_year>() as u16,
+                        distance: distance.get::<light_year>() as f64,
                         target: tid,
                     });
                     conn_count += 1;
                 }
             }
-
-            // info!("Building connections from smart gates");
-            // let smart_gates: Vec<raw::RawSmartGate> =
-            //     serde_json::from_str(&std::fs::read_to_string("data/smartgates.json")?)?;
-            // for gate in smart_gates.iter() {
-            //     if !star_map.contains_key(&gate.from) {
-            //         warn!("Smart gate has unknown source {}", gate.from);
-            //         continue;
-            //     }
-            //     if !star_map.contains_key(&gate.to) {
-            //         warn!("Smart gate has unknown target {}", gate.to);
-            //         continue;
-            //     }
-            //     let to_star = star_map.get(&gate.to).unwrap().clone();
-            //     let from_star = star_map.get_mut(&gate.from).unwrap();
-            //     let distance: Length = from_star.distance(&to_star);
-            //     from_star.connections.push(data::Connection {
-            //         id: conn_count,
-            //         conn_type: data::ConnType::SmartGate,
-            //         distance,
-            //         target: gate.to,
-            //     });
-            //     conn_count += 1;
-            // }
 
             info!("Building connections from jumps");
             let cloned_star_map = star_map.clone();
@@ -197,7 +175,7 @@ fn main() -> anyhow::Result<()> {
                         star.connections.push(data::Connection {
                             id: conn_count,
                             conn_type: data::ConnType::Jump,
-                            distance: distance.get::<light_year>() as u16,
+                            distance: distance.get::<light_year>(),
                             target: other_star.id,
                         });
                         conn_count += 1;
@@ -223,19 +201,25 @@ fn main() -> anyhow::Result<()> {
             jump_distance,
             optimize,
             source,
+            solarsystems,
         }) => {
-            info!("Loading star map");
-            let now = Instant::now();
+            info!("Loading star map {}", source);
+            let mut now = Instant::now();
             let mut star_map = data::get_star_map(source)?;
             info!("Loaded star map in {:.3}", now.elapsed().as_secs_f64());
 
+            info!("Loading solar systems {}", solarsystems);
+            now = Instant::now();
+            let solar_systems = raw::SolarSystems::from_file(solarsystems);
+            info!("Loaded solar systems in {:.3}", now.elapsed().as_secs_f64());
+
             // Inject a smart gate between
-            inject_smart_gate(&mut star_map, 30013484, 30013460, 319, u32::MAX);
-            inject_smart_gate(&mut star_map, 30013460, 30013933, 440, u32::MAX - 1);
-            inject_smart_gate(&mut star_map, 30013933, 30022226, 229, u32::MAX - 2);
-            inject_smart_gate(&mut star_map, 30013460, 30013484, 319, u32::MAX - 3);
-            inject_smart_gate(&mut star_map, 30013933, 30013460, 440, u32::MAX - 4);
-            inject_smart_gate(&mut star_map, 30022226, 30013933, 229, u32::MAX - 5);
+            inject_smart_gate(&mut star_map, 30013484, 30013460, 319.0, u32::MAX);
+            inject_smart_gate(&mut star_map, 30013460, 30013933, 440.0, u32::MAX - 1);
+            inject_smart_gate(&mut star_map, 30013933, 30022226, 229.0, u32::MAX - 2);
+            inject_smart_gate(&mut star_map, 30013460, 30013484, 319.0, u32::MAX - 3);
+            inject_smart_gate(&mut star_map, 30013933, 30013460, 440.0, u32::MAX - 4);
+            inject_smart_gate(&mut star_map, 30022226, 30013933, 229.0, u32::MAX - 5);
 
             let start = star_map
                 .get(&tools::system_id_to_u16(*start_id).unwrap())
@@ -252,7 +236,7 @@ fn main() -> anyhow::Result<()> {
                 &smart_gates_map,
                 start,
                 end,
-                *jump_distance,
+                *jump_distance as f64,
                 *optimize,
                 Some(60),
             );
@@ -260,14 +244,21 @@ fn main() -> anyhow::Result<()> {
             let path_len = path.path.len();
             for conn in path.path {
                 println!(
-                    "{} -> {} ({:?}, {} ly)",
-                    last_id, conn.target, conn.conn_type, conn.distance
+                    "{} ({}) -> {} ({}) ({:?}, {} ly)",
+                    solar_systems.get_name(&last_id),
+                    last_id,
+                    solar_systems.get_name(&conn.target),
+                    conn.target,
+                    conn.conn_type,
+                    conn.distance
                 );
                 last_id = conn.target;
             }
             println!(
-                "Path from {} to {}: {:?} {} nodes in {:.3}s",
+                "Path from {} ({}) to {} ({}): {:?} {} nodes in {:.3}s",
+                solar_systems.get_name(start_id),
                 start_id,
+                solar_systems.get_name(end_id),
                 end_id,
                 path.status,
                 path_len,

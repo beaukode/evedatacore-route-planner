@@ -18,9 +18,9 @@ fn successors(
     star_map: &HashMap<SolarSystemId, Star>,
     smart_gates_map: &SmartGatesMap,
     conn: &Connection,
-    jump_distance: u16,
+    jump_distance: f64,
     optimize: PathOptimize,
-) -> Vec<(Connection, i64)> {
+) -> Vec<(Connection, f64)> {
     let star = star_map.get(&conn.target).unwrap();
 
     let smart_gates = smart_gates_map
@@ -39,14 +39,14 @@ fn successors(
             match (optimize, &c.conn_type) {
                 // For shortest path, we only care about the distance
                 // and don't care about the type of connection
-                (PathOptimize::Distance, _) => (c.clone(), c.distance as i64),
+                (PathOptimize::Distance, _) => (c.clone(), c.distance),
                 // For fuel efficient, we penalise jumps
-                (PathOptimize::Fuel, ConnType::Jump) => (c.clone(), c.distance as i64),
+                (PathOptimize::Fuel, ConnType::Jump) => (c.clone(), c.distance),
                 // Over gates, we only count half the distance
-                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), 1),
-                (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), 1),
+                (PathOptimize::Fuel, ConnType::Gate) => (c.clone(), 1.0),
+                (PathOptimize::Fuel, ConnType::SmartGate) => (c.clone(), 1.0),
                 // Treat all hops the same, we want to minimise the total
-                (PathOptimize::Hops, _) => (c.clone(), 100),
+                (PathOptimize::Hops, _) => (c.clone(), 100.0),
             }
         })
         .collect()
@@ -61,16 +61,16 @@ pub fn heuristic(
     conn: &Connection,
     end: &Star,
     optimize: PathOptimize,
-) -> i64 {
+) -> f64 {
     if conn.conn_type != ConnType::Jump && optimize == PathOptimize::Fuel {
-        return 0;
+        return 0.0;
     }
     let d = star_map
         .get(&conn.target)
         .unwrap()
         .distance(end)
         .get::<light_year>();
-    return d as i64;
+    return d;
 }
 
 pub fn calc_path(
@@ -78,14 +78,14 @@ pub fn calc_path(
     smart_gates_map: &SmartGatesMap,
     start: &Star,
     end: &Star,
-    jump_distance: u16,
+    jump_distance: f64,
     optimize: PathOptimize,
     timeout: Option<u64>,
 ) -> PathResult {
     let init_conn = Connection {
         id: 0,
         conn_type: ConnType::Jump,
-        distance: 0,
+        distance: 0.0,
         target: start.id,
     };
     let path = astar::astar(
@@ -127,7 +127,7 @@ pub fn calc_path(
                 status: PathResultStatus::NotFound,
                 path: vec![],
                 stats: PathResultStats {
-                    cost: 0,
+                    cost: 0.0,
                     total_time: stats.total_time.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
                     loop_spend: stats.loop_spend.as_millis(),
@@ -140,7 +140,7 @@ pub fn calc_path(
                 status: PathResultStatus::Timeout,
                 path: vec![],
                 stats: PathResultStats {
-                    cost: 0,
+                    cost: 0.0,
                     total_time: stats.total_time.as_millis(),
                     successors_spend: stats.successors_spend.as_millis(),
                     loop_spend: stats.loop_spend.as_millis(),

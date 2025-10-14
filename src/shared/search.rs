@@ -11,7 +11,7 @@ use super::astar;
 use super::data::*;
 use super::tools;
 
-pub fn near(star_map: &HashMap<SolarSystemId, Star>, star: &Star, distance: u16) -> NearResult {
+pub fn near(star_map: &HashMap<SolarSystemId, Star>, star: &Star, distance: f64) -> NearResult {
     NearResult {
         connections: star
             .connections

@@ -31,7 +31,7 @@ pub enum ConnType {
 pub struct Connection {
     pub id: ConnectionId,
     pub conn_type: ConnType,
-    pub distance: u16,
+    pub distance: f64,
     pub target: SolarSystemId,
 }
 impl PartialEq for Connection {
@@ -108,7 +108,7 @@ pub fn get_star_map(path: &str) -> anyhow::Result<StarMap> {
 
 #[derive(serde::Serialize, Debug, ToSchema)]
 pub struct PathResultStats {
-    pub cost: i64,
+    pub cost: f64,
     pub total_time: u128,
     pub successors_spend: u128,
     pub loop_spend: u128,
@@ -118,7 +118,7 @@ pub struct PathResultStats {
 #[derive(serde::Serialize, Debug, ToSchema)]
 pub struct PathResultConnection {
     pub conn_type: ConnType,
-    pub distance: u16,
+    pub distance: f64,
     pub target: u32,
     pub id: u32,
 }
