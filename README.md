@@ -1,4 +1,4 @@
-# EVE Data Core Route Planner
+# EVE Datacore Route Planner
 
 A high-performance route planning tool for EVE Frontier, built in Rust. This tool helps calculate optimal paths through star systems using A\* search algorithm.
 
